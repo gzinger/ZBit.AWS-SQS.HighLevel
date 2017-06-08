@@ -7,7 +7,7 @@ Higher Level Library for Amazon SQS (Simple Queue Service) with event-based retr
 
 * It creates a new queue either in Send or in Subscribe if the queue with the given name doesn’t exist yet under your account on AWS.
 
-* Revision 1.0.1
+* Revision 1.1.0
 
 Small and Simple. Requires AWSSDK.SQS, Newtonsof.Json and log4net.
 
