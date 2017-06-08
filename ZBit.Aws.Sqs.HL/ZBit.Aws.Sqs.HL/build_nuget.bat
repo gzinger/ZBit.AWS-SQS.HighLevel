@@ -1,5 +1,5 @@
-nuget pack ZBit.Aws.Sqs.HL.csproj -Prop Configuration=Release -Symbols
+C:\Users\gzinger\Downloads\DevTools\nuget pack ZBit.Aws.Sqs.HL.csproj -Prop Configuration=Release -Symbols
 pause
-nuget push ZBit.Aws.Sqs.HL.1.0.2.0.nupkg
+C:\Users\gzinger\Downloads\DevTools\nuget push ZBit.Aws.Sqs.HL.1.1.0.0.nupkg -Source nuget.org
 pause
-#nuget push ZBit.Aws.Sqs.HL.1.0.2.0.symbols.nupkg
+#nuget push ZBit.Aws.Sqs.HL.1.1.0.0.symbols.nupkg

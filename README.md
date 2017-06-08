@@ -48,3 +48,6 @@ Sample Subscribe Usage:
 			return true;
 		}
 ```
+
+Nuget Package:
+[![NuGet](https://img.shields.io/nuget/v/nupack.svg)](https://www.nuget.org/packages/ZBit.Aws.Sqs.HL/)

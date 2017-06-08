@@ -20,8 +20,9 @@
 			* Added CLSCompliant.
 			* Added ISqsSubscriber interface to allow for unit-testing with mocking
 			* Added error handling in subscibe
+			* Updated to the latest version of AWSSDK.SQS
 		</releaseNotes>
-		<copyright>Copyright 2015 gzinger</copyright>
+		<copyright>Copyright 2015-2017 gzinger</copyright>
 		<tags>SQS AWS Amazon queue event delegate</tags>
 	</metadata>
 </package>
