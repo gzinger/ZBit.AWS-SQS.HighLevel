@@ -52,4 +52,5 @@ Sample Subscribe Usage:
 ```
 
 Nuget Package:
-[![NuGet](https://img.shields.io/nuget/v/nupack.svg)](https://www.nuget.org/packages/ZBit.Aws.Sqs.HL/)
+
+[![NuGet](https://img.shields.io/nuget/v/ZBit.Aws.Sqs.HL.svg)](https://www.nuget.org/packages/ZBit.Aws.Sqs.HL/)
