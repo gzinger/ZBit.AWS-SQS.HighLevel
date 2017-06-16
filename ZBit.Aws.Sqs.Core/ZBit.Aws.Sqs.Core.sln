@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZBit.Aws.Sqs.Core", "ZBit.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZBit.Aws.Sqs.CoreTests", "ZBit.Aws.Sqs.CoreTests\ZBit.Aws.Sqs.CoreTests.csproj", "{736C2C67-7CB8-445A-A6CD-1937DB5DABD8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{5E562807-5DD6-4417-B61D-AA208E2AD709}"
+	ProjectSection(SolutionItems) = preProject
+		ZBit.Aws.Sqs.Core\push_nuget.bat = ZBit.Aws.Sqs.Core\push_nuget.bat
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
