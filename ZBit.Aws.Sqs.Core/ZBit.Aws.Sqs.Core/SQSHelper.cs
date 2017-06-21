@@ -26,13 +26,13 @@ namespace ZBit.Aws.Sqs.Core {
 			}
 		}
 
-		public static SQSHelper Subscribe<T>(Func<T, bool> handler, string sQueueName, bool bDeleteMsgOnSuccess = true, int iMaxMessagesAtaTime = 10, int iWaitTimeSeconds = 20) {
+		public static SQSHelper Subscribe<T>(Func<T, bool> handler, string sQueueName, bool bDeleteMsgOnSuccess = true, int iMaxMessagesAtaTime = 10, int iWaitTimeSeconds = 20, Func<string, bool> errorHandler = null) {
 			SQSHelper queueHelperOut = new SQSHelper();
-			queueHelperOut.Subscribe(sQueueName, handler, bDeleteMsgOnSuccess, iMaxMessagesAtaTime, iWaitTimeSeconds);
+			queueHelperOut.Subscribe(sQueueName, handler, bDeleteMsgOnSuccess, iMaxMessagesAtaTime, iWaitTimeSeconds, errorHandler);
 			return queueHelperOut;
 		}
 
-		public void Subscribe<T>(string sQueueName, Func<T, bool> handler, bool bDeleteMsgOnSuccess = true, int iMaxMessagesAtaTime = 10, int iWaitTimeSeconds = 20) {
+		public void Subscribe<T>(string sQueueName, Func<T, bool> handler, bool bDeleteMsgOnSuccess = true, int iMaxMessagesAtaTime = 10, int iWaitTimeSeconds = 20, Func<string, bool> errorHandler=null) {
 			IAmazonSQS sqs;
 			string sQueueUrl;
 
@@ -44,33 +44,54 @@ namespace ZBit.Aws.Sqs.Core {
 			m_bShouldListen = true;
 			Task.Run(() => {
 				bool bHandlerRes;
+				Logger.DebugFormat("Getting Queue: {0};", sQueueName);
 				try {
 					sqs = GetClient();
 					sQueueUrl = GetQueue(sqs, sQueueName);
 				} catch (Exception ex) {
-					Logger.ErrorFormat("Error subscribing to Queue [{0}]: {1}", sQueueName, ex);
+					LogAndHandleError(errorHandler, "Error subscribing to Queue [{0}]: {1}", sQueueName, ex);
+					//we don't care what they return in this case - we can't continue anyway
 					return;
 				}
 				Logger.DebugFormat("Subscribing to Queue: {0}; Url: {1}", sQueueName, sQueueUrl);
 				while (m_bShouldListen) {
-					ReceiveMessageResponse resp = sqs.ReceiveMessageAsync(
-						new ReceiveMessageRequest(sQueueUrl) {
+					ReceiveMessageResponse resp;
+					try {
+						resp = sqs.ReceiveMessageAsync(
+							new ReceiveMessageRequest(sQueueUrl) {
 							WaitTimeSeconds = iWaitTimeSeconds,
-							MaxNumberOfMessages = iMaxMessagesAtaTime
+								MaxNumberOfMessages = iMaxMessagesAtaTime
+							}).Result;
+					} catch(Exception ex1) {
+						if (!LogAndHandleError(errorHandler, "Error Receiving messages from queue [{0}]: {1}", sQueueName, ex1)) {
+							return;  //error hadnler told me to stop processing messages
 						}
-					).Result;
+						Thread.Sleep(1000);
+						continue;
+					}
 					if (HttpStatusCode.OK != resp.HttpStatusCode) {
-						Logger.ErrorFormat("Error Reciving from queue [{0}]: {1}; {2}", sQueueName, resp.HttpStatusCode, resp.ResponseMetadata);
+						if(!LogAndHandleError(errorHandler, "Error in HTTP Response, Receiving from queue [{0}]: {1}; {2}", sQueueName, resp.HttpStatusCode, resp.ResponseMetadata)) {
+							return;  //error hadnler told me to stop processing messages
+						}
 						Thread.Sleep(1000);
 						continue;
 					}
 					foreach (var msg in resp.Messages) {
-						T obj = JsonConvert.DeserializeObject<T>(msg.Body);
+						T obj;
+						try {
+							obj = JsonConvert.DeserializeObject<T>(msg.Body);
+						}catch(Exception ex2) {
+							if (LogAndHandleError(errorHandler, "Error DeserializeObject from queue [{0}]: {1}", sQueueName, ex2)) {
+								continue;
+							} else {
+								return; //error hadnler told me to stop processing messages
+							} 
+						}
 						bHandlerRes = false;
 						try {
 							bHandlerRes = handler(obj);
-						} catch (Exception ex) {
-							Logger.WarnFormat("Error running handler on queue [{0}]: {1}", sQueueName, ex);
+						} catch (Exception ex3) {
+							Logger.WarnFormat("Error running handler on queue [{0}]: {1}", sQueueName, ex3);
 						}
 						if (bHandlerRes) {
 							if (bDeleteMsgOnSuccess) {
@@ -103,6 +124,15 @@ namespace ZBit.Aws.Sqs.Core {
 		private static IAmazonSQS GetClient() {
 			var options=ConfigMgr.Default.GetAWSOptions();
 			return options.CreateServiceClient<IAmazonSQS>();
+		}
+
+		private bool LogAndHandleError(Func<string, bool> errorHandler, string sErrorFormat, params object[] args) {
+			string sErr = string.Format(sErrorFormat, args);
+			Logger.Error(sErr);
+			if (null != errorHandler) {
+				return errorHandler(sErr);
+			}
+			return true;
 		}
 	}
 }
