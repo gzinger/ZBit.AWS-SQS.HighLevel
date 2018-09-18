@@ -8,7 +8,8 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/gzinger/ZBit.AWS-SQS.HighLevel</PackageProjectUrl>
     <PackageTags>SQS AWS Amazon queue event delegate .NET Core</PackageTags>
-    <PackageReleaseNotes>* Added CLSCompliant.
+    <PackageReleaseNotes>* .Net Core 2.1
+* Added CLSCompliant.
 * Added ISqsSubscriber interface to allow for unit-testing with mocking
 * Added error handling in subscibe
 * Updated to the latest version of AWSSDK.SQS
@@ -19,7 +20,9 @@
 			* It creates a new queue either in Send or in Subscribe if the queue with the given name doesn’t exist yet under your account on AWS.
 			Small and Simple. Requires AWSSDK.SQS, Newtonsof.Json and log4net.</Description>
     <Copyright></Copyright>
-    <Version>1.0.1</Version>
+    <Version>1.2.0</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

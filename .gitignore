@@ -195,3 +195,4 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 /ZBit.Aws.Sqs.Core/results.xml
+/ZBit.Aws.Sqs.Core/ZBit.Aws.Sqs.Core/NugetPublishKey.txt
