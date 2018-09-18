@@ -1,23 +1,21 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Amazon.SQS;
+﻿using Amazon.SQS;
 using Amazon.SQS.Model;
 using log4net;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Concurrent;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace ZBit.Aws.Sqs.Core {
+namespace ZBit.Aws.Sqs.Core
+{
 	public class SQSHelper : ISqsSubscriber {
 		internal static readonly ILog Logger = LogManager.GetLogger(typeof(SQSHelper));
-		internal static ConcurrentDictionary<string, string> g_dict = new ConcurrentDictionary<string, string>();
+		internal static ConcurrentDictionary<string, string> DictQueieNameToUrl = new ConcurrentDictionary<string, string>();
 
-		internal bool m_bShouldListen;
+		internal bool ShouldListen;
 
 		public static async Task<SendMessageResponse> Send<T>(string sQueueName, T payLoad) {
 			using (IAmazonSQS sqs = GetClient()) {
@@ -37,13 +35,12 @@ namespace ZBit.Aws.Sqs.Core {
 			string sQueueUrl;
 
 			if (null == handler) {
-				throw new ArgumentException("required parameter", "handler");
+				throw new ArgumentException("required parameter", nameof(handler));
 			}
 
 			//Logger.DebugFormat("Subscribing to Queue {0}.", sQueueName);
-			m_bShouldListen = true;
+			ShouldListen = true;
 			Task.Run(() => {
-				bool bHandlerRes;
 				Logger.DebugFormat("Getting Queue: {0};", sQueueName);
 				try {
 					sqs = GetClient();
@@ -54,7 +51,7 @@ namespace ZBit.Aws.Sqs.Core {
 					return;
 				}
 				Logger.DebugFormat("Subscribing to Queue: {0}; Url: {1}", sQueueName, sQueueUrl);
-				while (m_bShouldListen) {
+				while (ShouldListen) {
 					ReceiveMessageResponse resp;
 					try {
 						resp = sqs.ReceiveMessageAsync(
@@ -87,7 +84,7 @@ namespace ZBit.Aws.Sqs.Core {
 								return; //error hadnler told me to stop processing messages
 							} 
 						}
-						bHandlerRes = false;
+						var bHandlerRes = false;
 						try {
 							bHandlerRes = handler(obj);
 						} catch (Exception ex3) {
@@ -104,19 +101,18 @@ namespace ZBit.Aws.Sqs.Core {
 		}
 
 		public void UnSubscribe() {
-			m_bShouldListen = false;
+			ShouldListen = false;
 		}
 
 		public static string GetQueue(IAmazonSQS sqs, string sQueueName) {
-			string sQueueUrl;
-			if (null == sqs) throw new ArgumentException("required parameter", "sqs");
-			if (!g_dict.TryGetValue(sQueueName, out sQueueUrl)) {
+			if (null == sqs) throw new ArgumentException("required parameter", nameof(sqs));
+			if (!DictQueieNameToUrl.TryGetValue(sQueueName, out var sQueueUrl)) {
 				var respQueCreate = sqs.CreateQueueAsync(sQueueName).Result;
 				if (HttpStatusCode.OK != respQueCreate.HttpStatusCode) {
 					throw new Exception("Unexpected result creating SQS: " + respQueCreate.HttpStatusCode);
 				}
 				sQueueUrl = respQueCreate.QueueUrl;
-				g_dict[sQueueName] = sQueueUrl;
+				DictQueieNameToUrl[sQueueName] = sQueueUrl;
 			}
 			return sQueueUrl;
 		}

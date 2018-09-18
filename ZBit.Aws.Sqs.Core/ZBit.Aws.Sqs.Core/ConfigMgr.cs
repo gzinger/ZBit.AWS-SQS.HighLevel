@@ -1,20 +1,18 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
-namespace ZBit.Aws.Sqs.Core {
+namespace ZBit.Aws.Sqs.Core
+{
 	public class ConfigMgr {
-		private static IConfigurationRoot _Configuration = null;
+		private static IConfigurationRoot _configuration;
 
 		public static IConfigurationRoot Default {
 			get {
-				if (null == _Configuration) {
+				if (null == _configuration) {
 					var mgr = new ConfigMgr();
-					_Configuration = mgr.BuildConfiguration();
+					_configuration = mgr.BuildConfiguration();
 				}
-				return _Configuration;
+				return _configuration;
 			}
 		}
 
