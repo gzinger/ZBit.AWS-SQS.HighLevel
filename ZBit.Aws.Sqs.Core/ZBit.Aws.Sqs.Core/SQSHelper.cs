@@ -117,6 +117,15 @@ namespace ZBit.Aws.Sqs.Core
 			return sQueueUrl;
 		}
 
+		public async Task<DeleteQueueResponse> RemoveQueue(string sQueueName)
+		{
+
+			using (IAmazonSQS sqs = GetClient()) {
+				var qURL = await sqs.GetQueueUrlAsync(sQueueName);
+				return await sqs.DeleteQueueAsync(qURL.QueueUrl);
+			}
+		}
+
 		private static IAmazonSQS GetClient() {
 			var options=ConfigMgr.Default.GetAWSOptions();
 			return options.CreateServiceClient<IAmazonSQS>();
